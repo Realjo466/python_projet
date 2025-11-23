@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <title>Extraction d'informations</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <h1>Extraction d'informations (TP Regex)</h1>
+
+    <form method="post">
+      <label for="text">Texte source :</label><br>
+      <textarea id="text" name="text" rows="8" cols="80">{{ text or '' }}</textarea>
+      <br><br>
+
+      <label for="pattern">Pattern regex :</label><br>
+      <input type="text" id="pattern" name="pattern"
+             value="{{ pattern or '' }}"
+             placeholder="par ex. (\\d{2}/\\d{2}/\\d{4})">
+      <br><br>
+
+      <fieldset>
+        <legend>Options (flags) :</legend>
+        <label>
+          <input type="checkbox" name="ignore_case"
+                 {% if request.form.get('ignore_case') %}checked{% endif %}>
+          IGNORECASE
+        </label>
+        <label>
+          <input type="checkbox" name="multiline"
+                 {% if request.form.get('multiline') %}checked{% endif %}>
+          MULTILINE
+        </label>
+        <label>
+          <input type="checkbox" name="dotall"
+                 {% if request.form.get('dotall') %}checked{% endif %}>
+          DOTALL
+        </label>
+      </fieldset>
+
+      <br>
+      <button type="submit">Extraire</button>
+    </form>
+
+    <hr>
+
+    {% if error_message %}
+      <p class="error">
+        Impossible d'utiliser cette expression régulière.
+        Vérifiez la syntaxe (parenthèses, crochets, accolades, antislashs).
+      </p>
+      <pre>{{ error_message }}</pre>
+    {% endif %}
+
+    {% if matches %}
+      <h2>Résultats</h2>
+      <p>{{ matches|length }} correspondance(s) trouvée(s).</p>
+
+      <table border="1" cellpadding="4" cellspacing="0">
+        <tr>
+          <th>Texte trouvé</th>
+          <th>Groupes capturés</th>
+          <th>Position (start:end)</th>
+        </tr>
+        {% for m in matches %}
+          <tr>
+            <td><code>{{ m.match }}</code></td>
+            <td>
+              {% if m.groups %}
+                {% for g in m.groups %}
+                  <code>{{ g }}</code>{% if not loop.last %}, {% endif %}
+                {% endfor %}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>{{ m.start }} : {{ m.end }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% endif %}
+
+    <p><a href="/">Retour à l'accueil</a></p>
+  </body>
+</html>
