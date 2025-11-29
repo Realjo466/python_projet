@@ -2,102 +2,108 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Validation de données</title>
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
-    <h1>Validation de données (TP Regex)</h1>
+    <div class="page-header">
+      <h1>Validation de données</h1>
+      <p class="page-desc">Testez rapidement si une valeur correspond à un format (email, téléphone, code postal, date, ou une regex personnalisée).</p>
+    </div>
 
-    <form method="post">
-      <label for="value">Valeur à tester :</label><br>
-      <input type="text" id="value" name="value" value="{{ value or '' }}" required>
-      <br><br>
+    <main>
+      <form method="post">
+        <label for="value">Valeur à tester :</label><br>
+        <input type="text" id="value" name="value" value="{{ value or '' }}" required>
+        <br><br>
 
-      <fieldset>
-        <legend>Type de validation :</legend>
+        <fieldset>
+          <legend>Type de validation :</legend>
 
-        <label>
-          <input type="radio" name="validation_type" value="email"
-                 {% if validation_type == 'email' %}checked{% endif %}>
-          Email
-        </label><br>
+          <label>
+            <input type="radio" name="validation_type" value="email"
+                   {% if validation_type == 'email' %}checked{% endif %}>
+            Email
+          </label><br>
 
-        <label>
-          <input type="radio" name="validation_type" value="phone"
-                 {% if validation_type == 'phone' %}checked{% endif %}>
-          Numéro de téléphone (format général)
-        </label><br>
+          <label>
+            <input type="radio" name="validation_type" value="phone"
+                   {% if validation_type == 'phone' %}checked{% endif %}>
+            Numéro de téléphone (format général)
+          </label><br>
 
-        <label>
-          <input type="radio" name="validation_type" value="postal"
-                 {% if validation_type == 'postal' %}checked{% endif %}>
-          Code postal (FR)
-        </label><br>
+          <label>
+            <input type="radio" name="validation_type" value="postal"
+                   {% if validation_type == 'postal' %}checked{% endif %}>
+            Code postal (FR)
+          </label><br>
 
-        <label>
-          <input type="radio" name="validation_type" value="date"
-                 {% if validation_type == 'date' %}checked{% endif %}>
-          Date (JJ/MM/AAAA)
-        </label><br>
+          <label>
+            <input type="radio" name="validation_type" value="date"
+                   {% if validation_type == 'date' %}checked{% endif %}>
+            Date (JJ/MM/AAAA)
+          </label><br>
 
-        <label>
-          <input type="radio" name="validation_type" value="custom"
-                 {% if validation_type == 'custom' %}checked{% endif %}>
-          Regex personnalisée
-        </label>
-      </fieldset>
+          <label>
+            <input type="radio" name="validation_type" value="custom"
+                   {% if validation_type == 'custom' %}checked{% endif %}>
+            Regex personnalisée
+          </label>
+        </fieldset>
 
-      <br>
+        <br>
 
-      <label for="custom_pattern">Pattern personnalisé (si choisi) :</label><br>
-      <input type="text" id="custom_pattern" name="custom_pattern"
-             value="{{ custom_pattern or '' }}"
-             placeholder="par ex. ^[A-Z]{2}\\d{4}$">
-      <br><br>
+        <label for="custom_pattern">Pattern personnalisé (si choisi) :</label><br>
+        <input type="text" id="custom_pattern" name="custom_pattern"
+               value="{{ custom_pattern or '' }}"
+               placeholder="par ex. ^[A-Z]{2}\\d{4}$">
+        <br><br>
 
-      <button type="submit">Valider</button>
-    </form>
+        <button type="submit">Valider</button>
+      </form>
 
-    <hr>
+      <hr>
 
-    {% if result is not none %}
-      <h2>Résultat</h2>
+      {% if result is not none %}
+        <h2>Résultat</h2>
 
-      {% if result == "invalid_pattern" %}
-        <p class="error">
-          Votre expression régulière personnalisée n'a pas pu être comprise.
-          Vérifiez les parenthèses <code>()</code>, les crochets <code>[]</code>,
-          les accolades <code>{}</code> et les antislashs <code>\</code>.
-        </p>
-        {% if error_message %}
-          <pre>{{ error_message }}</pre>
+        {% if result == "invalid_pattern" %}
+          <p class="error">
+            Votre expression régulière personnalisée n'a pas pu être comprise.
+            Vérifiez les parenthèses <code>()</code>, les crochets <code>[]</code>,
+            les accolades <code>{}</code> et les antislashs <code>\</code>.
+          </p>
+          {% if error_message %}
+            <pre>{{ error_message }}</pre>
+          {% endif %}
+        {% elif result %}
+          <p class="success">
+            La valeur <strong>{{ value }}</strong> correspond au format attendu.
+          </p>
+        {% else %}
+          <p class="error">
+            La valeur <strong>{{ value }}</strong> ne correspond pas au format attendu.
+          </p>
         {% endif %}
-      {% elif result %}
-        <p class="success">
-          La valeur <strong>{{ value }}</strong> correspond au format attendu.
-        </p>
-      {% else %}
-        <p class="error">
-          La valeur <strong>{{ value }}</strong> ne correspond pas au format attendu.
-        </p>
+
+        {% if pattern_used %}
+          <p>Regex utilisée : <code>{{ pattern_used }}</code></p>
+        {% endif %}
+
+        {% if feedback_title or feedback_text %}
+          <div class="hint">
+            {% if feedback_title %}
+              <h3>{{ feedback_title }}</h3>
+            {% endif %}
+            {% if feedback_text %}
+              <p>{{ feedback_text }}</p>
+            {% endif %}
+          </div>
+        {% endif %}
       {% endif %}
 
-      {% if pattern_used %}
-        <p>Regex utilisée : <code>{{ pattern_used }}</code></p>
-      {% endif %}
-
-      {% if feedback_title or feedback_text %}
-        <div class="hint">
-          {% if feedback_title %}
-            <h3>{{ feedback_title }}</h3>
-          {% endif %}
-          {% if feedback_text %}
-            <p>{{ feedback_text }}</p>
-          {% endif %}
-        </div>
-      {% endif %}
-    {% endif %}
-
-    <p><a href="/">Retour à l'accueil</a></p>
+      <p><a href="/">Retour à l'accueil</a></p>
+    </main>
   </body>
 </html>
