@@ -1,3 +1,419 @@
+/* ==================================================
+   Modern UI stylesheet for python_projet
+   - Responsive 3-column module grid
+   - Card styles with hover animations
+   - Improved typography, inputs, radios/checkboxes
+   - Buttons with gradient + shadow
+   - Messages (success/error), tables, code blocks
+   - Smooth slide-up entrance animation
+   ================================================== */
+
+:root{
+  --bg-start: #eef2ff;
+  --bg-end: #f8fafc;
+  --accent-1: #667eea;
+  --accent-2: #764ba2;
+  --muted: #6b7280;
+  --text: #0f1724;
+  --card-bg: #ffffff;
+  --surface: #f8fafc;
+}
+
+/* Reset / base */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  background: linear-gradient(135deg,var(--bg-start),var(--bg-end));
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:28px;
+}
+
+/* Main centered card */
+main, body > .page, body > .welcome-container { width:100%; max-width:1200px; }
+body > :not(script) {
+  background: var(--card-bg);
+  border-radius:14px;
+  padding:36px;
+  box-shadow: 0 12px 40px rgba(15,23,42,0.10);
+  margin:28px auto;
+  animation: slideUp .45s ease both;
+}
+
+@keyframes slideUp{
+  from{opacity:0; transform:translateY(14px)}
+  to{opacity:1; transform:none}
+}
+
+/* Typography */
+h1{font-size:2.1rem;line-height:1.05;margin:0 0 .6rem;font-weight:700}
+h2{font-size:1.15rem;margin:.25rem 0;font-weight:600}
+p{color:var(--muted);margin:.35rem 0 1rem}
+
+/* Modules grid: 3 cols desktop, 1 col mobile */
+.modules-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px}
+.module-card{display:block;padding:18px;border-radius:12px;background:linear-gradient(180deg,#ffffff, #fbfdff);border:1px solid rgba(99,102,241,0.06);box-shadow:0 8px 20px rgba(17,24,39,0.04);text-decoration:none;color:inherit;transition:transform .18s ease,box-shadow .18s ease}
+.module-card:hover{transform:translateY(-6px) scale(1.01);box-shadow:0 18px 40px rgba(17,24,39,0.09)}
+.module-card:focus{outline:2px solid rgba(102,126,234,0.18)}
+.module-icon{width:56px;height:56px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:.45rem;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));color:#fff;box-shadow:0 6px 16px rgba(102,126,234,0.18)}
+.module-card h2{margin:.35rem 0}
+.module-card p{margin:0;color:var(--muted);font-size:.95rem}
+
+@media (max-width:960px){.modules-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.modules-grid{grid-template-columns:1fr}body > :not(script){padding:20px;margin:16px}h1{font-size:1.45rem}}
+
+/* Form controls: cleaner, rounded, visible focus glow */
+label, legend{display:block;font-weight:600;color:#0b1220;margin-bottom:.4rem}
+fieldset{border:1px solid #eef2ff;border-radius:10px;padding:12px 14px;background:#fff}
+input[type="text"], textarea, input[type="email"], input[type="search"]{
+  width:100%;padding:12px 14px;border-radius:10px;border:1px solid #e6e9f8;background:#fbfdff;font-size:0.98rem;transition:box-shadow .18s ease,border-color .12s ease}
+input:focus, textarea:focus{outline:none;border-color:rgba(102,126,234,0.9);box-shadow:0 6px 22px rgba(102,126,234,0.12);background:#fff}
+textarea{min-height:140px;resize:vertical}
+
+/* Custom radios / checkboxes */
+.form-check{display:flex;align-items:center;gap:.6rem;padding:.35rem 0}
+.form-check input{appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:6px;border:1.5px solid #cbd5e1;background:#fff;display:inline-block;position:relative;cursor:pointer}
+.form-check input:checked{background:linear-gradient(135deg,var(--accent-1),var(--accent-2));border-color:transparent}
+.form-check input:checked::after{content:'';position:absolute;left:5px;top:2px;width:4px;height:9px;border:2px solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.form-check.radio input{border-radius:50%}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:.6rem;padding:10px 16px;border-radius:999px;border:0;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#fff;font-weight:700;box-shadow:0 10px 26px rgba(102,126,234,0.16);cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+.btn:hover{transform:translateY(-3px);box-shadow:0 18px 44px rgba(102,126,234,0.2)}
+.btn:active{transform:translateY(0)}
+
+/* Messages */
+.hint{background:#f1f5ff;border-left:4px solid var(--accent-1);padding:10px 12px;border-radius:8px;color:#1e3a8a}
+.success{background:#ecfdf5;border-left:4px solid #10b981;color:#064e3b;padding:10px 12px;border-radius:8px}
+.error{background:#fff1f2;border-left:4px solid #ef4444;color:#7f1d1d;padding:10px 12px;border-radius:8px}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;margin-top:12px;border-radius:10px;overflow:hidden;background:var(--card-bg);box-shadow:0 6px 18px rgba(2,6,23,0.03)}
+th,td{padding:10px 12px;text-align:left;font-size:0.95rem}
+th{background:#f8fafc;font-weight:700;color:#0b1220;border-bottom:1px solid #eef2f8}
+tr:nth-child(even) td{background:#fbfdff}
+tr:hover td{background:#f1f8ff}
+
+/* Code / pre */
+code, pre{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace}
+code{background:#0b1220;color:#f8fafc;padding:.06rem .35rem;border-radius:6px;font-size:.92rem}
+pre{background:#0b1220;color:#e6eef8;padding:12px;border-radius:8px;overflow:auto}
+
+/* Utility helpers used across templates */
+.card{background:linear-gradient(180deg,#fff,#fbfdff);border-radius:12px;padding:14px;border:1px solid rgba(99,102,241,0.06);box-shadow:0 8px 28px rgba(17,24,39,0.04)}
+.form-grid{display:grid;grid-template-columns:1fr 420px;gap:18px;align-items:start}
+@media (max-width:1000px){.form-grid{grid-template-columns:1fr}} 
+
+/* Accessibility and small tweaks */
+a{color:var(--accent-1);text-decoration:none}
+a:hover{text-decoration:underline}
+button:focus,input:focus,textarea:focus{outline-offset:3px}
+
+/* small responsive polish */
+@media (max-width:640px){body{padding:14px}body> :not(script){padding:18px} .module-icon{width:48px;height:48px;font-size:1.05rem}}
+
+/* End of stylesheet */
+/* Global layout */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #2d3748;
+}
+
+h1, h2, h3 {
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Main card container */
+body > * {
+  box-sizing: border-box;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+body > .page-wrapper,
+body > form,
+body > div,
+body > main {
+  width: 100%;
+}
+
+/* Wrap the whole content in a centered card */
+body > :not(script) {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 36px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+p {
+  line-height: 1.7;
+  margin: 0.5rem 0 1rem;
+  color: #4a5568;
+  font-size: 1rem;
+}
+
+ul {
+  padding-left: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+ul li {
+  margin: 0.75rem 0;
+  line-height: 1.6;
+}
+
+a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+a:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+/* Forms */
+form {
+  margin-top: 1rem;
+}
+
+label, legend {
+  font-weight: 600;
+  color: #111827;
+}
+
+fieldset {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.75rem 1rem 1rem;
+  margin-top: 0.5rem;
+  background: #ffffff;
+}
+
+legend {
+  padding: 0 0.4rem;
+}
+
+input[type="text"], textarea {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  background-color: #f9fafb;
+}
+
+input[type="text"]:focus,
+textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+  background-color: #ffffff;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  margin-right: 0.35rem;
+}
+
+/* Buttons */
+button {
+  padding: 0.55rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.35);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.4);
+  filter: brightness(1.03);
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 15px rgba(15, 23, 42, 0.35);
+}
+
+/* Messages */
+.hint {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.5rem;
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  color: #1e3a8a;
+  font-size: 0.9rem;
+}
+
+.success {
+  color: #166534;
+  background: #dcfce7;
+  border-left: 4px solid #22c55e;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+}
+
+.error {
+  color: #b91c1c;
+  background: #fee2e2;
+  border-left: 4px solid #ef4444;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9rem;
+  background: #e5e7eb;
+  padding: 0.05rem 0.25rem;
+  border-radius: 0.25rem;
+}
+
+pre {
+  background: #111827;
+  color: #e5e7eb;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 1.5rem 0;
+}
+
+/* Tables (extraction results) */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.75rem;
+  background: #ffffff;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+th, td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  color: #111827;
+}
+
+tr:nth-child(even) td {
+  background-color: #f9fafb;
+}
+
+tr:hover td {
+  background-color: #e5f0ff;
+}
+
+/* Responsive tweaks */
+@media (max-width: 640px) {
+  body > :not(script) {
+    margin: 16px auto;
+    padding: 20px 16px 24px;
+    border-radius: 10px;
+  }
+
+  h1 {
+    font-size: 1.45rem;
+  }
+
+  textarea {
+    min-height: 120px;
+  }
+}
+/* Global layout */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #2d3748;
+}
+
+h1, h2, h3 {
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
 /* Global layout */
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -576,39 +992,106 @@ table {
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
-th, td {
-  padding: 0.5rem 0.75rem;
-  text-align: left;
-  font-size: 0.9rem;
-}
-
-th {
-  background-color: #f3f4f6;
-  font-weight: 600;
-  color: #111827;
-}
-
-tr:nth-child(even) td {
-  background-color: #f9fafb;
-}
-
-tr:hover td {
-  background-color: #e5f0ff;
-}
-
-/* Responsive tweaks */
-@media (max-width: 640px) {
-  body > :not(script) {
-    margin: 16px auto;
-    padding: 20px 16px 24px;
-    border-radius: 10px;
-  }
-
-  h1 {
-    font-size: 1.45rem;
-  }
-
   textarea {
     min-height: 120px;
   }
+
+  .modules-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .module-card {
+    padding: 1.5rem 1.2rem;
+  }
+
+  .module-icon {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+  }
+}
+
+/* Modern form/result cards and utilities */
+.card {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border: 1px solid rgba(99,102,241,0.08);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 8px 24px rgba(43, 52, 76, 0.07);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.form-card {
+  padding: 1.25rem;
+}
+
+.result-card {
+  padding: 1rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  background: #eef2ff;
+  color: #434190;
+  border: 1px solid #e6e9ff;
+  font-weight: 600;
+}
+
+.inline-hint {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.pattern-input {
+  font-family: "Courier New", monospace;
+  background: #f8fafc;
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(99,102,241,0.12);
+  background: linear-gradient(180deg,#ffffff,#f7f7ff);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.copy-btn:active { transform: translateY(1px); }
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.results-table th, .results-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.result-highlight {
+  display: inline-block;
+  padding: 0.15rem 0.35rem;
+  border-radius: 6px;
+  background: linear-gradient(90deg,#fff7ed,#fff1e0);
+  color:#92400e;
+  font-weight:600;
+}
+
+/* Responsive for small screens: stack columns */
+@media (max-width: 880px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .result-card { order: 2; }
 }

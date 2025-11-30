@@ -112,5 +112,74 @@
         </footer>
       </main>
     </div>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformation & nettoyage</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="page-header">
+      <h1>Transformation & nettoyage</h1>
+      <p class="page-desc">Nettoyez et transformez du texte en remplaçant des patterns par d'autres contenus.</p>
+    </div>
+
+    <main>
+      <form method="post">
+        <label for="text">Texte source :</label>
+        <textarea id="text" name="text">{{ text or '' }}</textarea>
+
+        <label for="pattern">Pattern regex :</label>
+        <input type="text" id="pattern" name="pattern"
+               value="{{ pattern or '' }}"
+               placeholder="par ex. \\\s+ pour les espaces multiples">
+
+        <label for="replacement">Remplacement :</label>
+        <input type="text" id="replacement" name="replacement"
+               value="{{ replacement or '' }}"
+               placeholder="par ex. ' '">
+
+        <fieldset>
+          <legend>Options (flags) :</legend>
+          <div class="form-check">
+            <label class="form-check">
+              <input type="checkbox" name="ignore_case"
+                     {% if request.form.get('ignore_case') %}checked{% endif %}>
+              IGNORECASE
+            </label>
+            <label class="form-check">
+              <input type="checkbox" name="multiline"
+                     {% if request.form.get('multiline') %}checked{% endif %}>
+              MULTILINE
+            </label>
+            <label class="form-check">
+              <input type="checkbox" name="dotall"
+                     {% if request.form.get('dotall') %}checked{% endif %}>
+              DOTALL
+            </label>
+          </div>
+        </fieldset>
+
+        <button type="submit" class="btn">Transformer</button>
+      </form>
+
+      <hr>
+
+      {% if error_message %}
+        <p class="error">
+          Impossible d'utiliser cette expression régulière.
+          Vérifiez la syntaxe (parenthèses, crochets, accolades, antislashs).
+        </p>
+        <pre>{{ error_message }}</pre>
+      {% endif %}
+
+      {% if output_text is not none %}
+        <h2>Résultat</h2>
+        <p>Nombre de remplacements : {{ count }}</p>
+
+        <h3>Texte transformé :</h3>
+        <pre>{{ output_text }}</pre>
+      {% endif %}
+
+      <p><a href="/">Retour à l'accueil</a></p>
+    </main>
   </body>
 </html>
