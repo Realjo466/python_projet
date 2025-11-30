@@ -2,102 +2,149 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8">
-    <title>Validation de données</title>
+    <title>TP Regex · Validation de données</title>
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
-    <h1>Validation de données (TP Regex)</h1>
-
-    <form method="post">
-      <label for="value">Valeur à tester :</label><br>
-      <input type="text" id="value" name="value" value="{{ value or '' }}" required>
-      <br><br>
-
-      <fieldset>
-        <legend>Type de validation :</legend>
-
-        <label>
-          <input type="radio" name="validation_type" value="email"
-                 {% if validation_type == 'email' %}checked{% endif %}>
-          Email
-        </label><br>
-
-        <label>
-          <input type="radio" name="validation_type" value="phone"
-                 {% if validation_type == 'phone' %}checked{% endif %}>
-          Numéro de téléphone (format général)
-        </label><br>
-
-        <label>
-          <input type="radio" name="validation_type" value="postal"
-                 {% if validation_type == 'postal' %}checked{% endif %}>
-          Code postal (FR)
-        </label><br>
-
-        <label>
-          <input type="radio" name="validation_type" value="date"
-                 {% if validation_type == 'date' %}checked{% endif %}>
-          Date (JJ/MM/AAAA)
-        </label><br>
-
-        <label>
-          <input type="radio" name="validation_type" value="custom"
-                 {% if validation_type == 'custom' %}checked{% endif %}>
-          Regex personnalisée
-        </label>
-      </fieldset>
-
-      <br>
-
-      <label for="custom_pattern">Pattern personnalisé (si choisi) :</label><br>
-      <input type="text" id="custom_pattern" name="custom_pattern"
-             value="{{ custom_pattern or '' }}"
-             placeholder="par ex. ^[A-Z]{2}\\d{4}$">
-      <br><br>
-
-      <button type="submit">Valider</button>
-    </form>
-
-    <hr>
-
-    {% if result is not none %}
-      <h2>Résultat</h2>
-
-      {% if result == "invalid_pattern" %}
-        <p class="error">
-          Votre expression régulière personnalisée n'a pas pu être comprise.
-          Vérifiez les parenthèses <code>()</code>, les crochets <code>[]</code>,
-          les accolades <code>{}</code> et les antislashs <code>\</code>.
-        </p>
-        {% if error_message %}
-          <pre>{{ error_message }}</pre>
-        {% endif %}
-      {% elif result %}
-        <p class="success">
-          La valeur <strong>{{ value }}</strong> correspond au format attendu.
-        </p>
-      {% else %}
-        <p class="error">
-          La valeur <strong>{{ value }}</strong> ne correspond pas au format attendu.
-        </p>
-      {% endif %}
-
-      {% if pattern_used %}
-        <p>Regex utilisée : <code>{{ pattern_used }}</code></p>
-      {% endif %}
-
-      {% if feedback_title or feedback_text %}
-        <div class="hint">
-          {% if feedback_title %}
-            <h3>{{ feedback_title }}</h3>
-          {% endif %}
-          {% if feedback_text %}
-            <p>{{ feedback_text }}</p>
-          {% endif %}
+    <div class="page-wrapper">
+      <header class="page-header">
+        <div class="app-title">
+          <h1>Validation de données</h1>
+          <p class="app-subtitle">Vérifiez si une valeur correspond à un format classique ou à votre propre regex.</p>
         </div>
-      {% endif %}
-    {% endif %}
+        <nav class="top-nav">
+          <a href="/validation" class="nav-link active">Validation</a>
+          <a href="/extraction" class="nav-link">Extraction</a>
+          <a href="/transformation" class="nav-link">Transformation</a>
+          <a href="/" class="nav-link nav-link-secondary">Accueil</a>
+        </nav>
+      </header>
 
-    <p><a href="/">Retour à l'accueil</a></p>
+      <main>
+        <div class="two-column">
+          <section class="section section-main">
+            <h2>1. Entrez la valeur à tester</h2>
+            <form method="post" class="form-grid">
+              <div class="field">
+                <label for="value">Valeur à tester</label>
+                <input type="text" id="value" name="value" value="{{ value or '' }}" required>
+                <p class="field-help">Par ex. une adresse email, un numéro de téléphone, un code postal, une date…</p>
+              </div>
+
+              <div class="field">
+                <fieldset>
+                  <legend>2. Choisissez le type de validation</legend>
+
+                  <div class="option-list">
+                    <label class="option-item">
+                      <input type="radio" name="validation_type" value="email"
+                             {% if validation_type == 'email' %}checked{% endif %}>
+                      <span>
+                        <strong>Email</strong>
+                        <span class="option-help">ex. utilisateur@domaine.com</span>
+                      </span>
+                    </label>
+
+                    <label class="option-item">
+                      <input type="radio" name="validation_type" value="phone"
+                             {% if validation_type == 'phone' %}checked{% endif %}>
+                      <span>
+                        <strong>Téléphone</strong>
+                        <span class="option-help">format général, chiffres avec séparateurs éventuels</span>
+                      </span>
+                    </label>
+
+                    <label class="option-item">
+                      <input type="radio" name="validation_type" value="postal"
+                             {% if validation_type == 'postal' %}checked{% endif %}>
+                      <span>
+                        <strong>Code postal (FR)</strong>
+                        <span class="option-help">5 chiffres, ex. 75001</span>
+                      </span>
+                    </label>
+
+                    <label class="option-item">
+                      <input type="radio" name="validation_type" value="date"
+                             {% if validation_type == 'date' %}checked{% endif %}>
+                      <span>
+                        <strong>Date</strong>
+                        <span class="option-help">format JJ/MM/AAAA, ex. 31/12/2025</span>
+                      </span>
+                    </label>
+
+                    <label class="option-item">
+                      <input type="radio" name="validation_type" value="custom"
+                             {% if validation_type == 'custom' %}checked{% endif %}>
+                      <span>
+                        <strong>Regex personnalisée</strong>
+                        <span class="option-help">utilisez votre propre expression régulière</span>
+                      </span>
+                    </label>
+                  </div>
+                </fieldset>
+              </div>
+
+              <div class="field">
+                <label for="custom_pattern">Pattern personnalisé (si choisi)</label>
+                <input type="text" id="custom_pattern" name="custom_pattern"
+                       value="{{ custom_pattern or '' }}"
+                       placeholder="par ex. ^[A-Z]{2}\\d{4}$">
+                <p class="field-help">Pensez à échapper les antislashs dans Python : <code>\\d</code>, <code>\\w</code>, etc.</p>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit">Valider</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="section section-side">
+            {% if result is not none %}
+              <h2>Résultat</h2>
+
+              {% if result == "invalid_pattern" %}
+                <p class="error">
+                  Votre expression régulière personnalisée n'a pas pu être comprise.
+                  Vérifiez les parenthèses <code>()</code>, les crochets <code>[]</code>,
+                  les accolades <code>{}</code> et les antislashs <code>\</code>.
+                </p>
+                {% if error_message %}
+                  <pre>{{ error_message }}</pre>
+                {% endif %}
+              {% elif result %}
+                <p class="success">
+                  La valeur <strong>{{ value }}</strong> correspond au format attendu.
+                </p>
+              {% else %}
+                <p class="error">
+                  La valeur <strong>{{ value }}</strong> ne correspond pas au format attendu.
+                </p>
+              {% endif %}
+
+              {% if pattern_used %}
+                <p>Regex utilisée : <code>{{ pattern_used }}</code></p>
+              {% endif %}
+
+              {% if feedback_title or feedback_text %}
+                <div class="hint">
+                  {% if feedback_title %}
+                    <h3>{{ feedback_title }}</h3>
+                  {% endif %}
+                  {% if feedback_text %}
+                    <p>{{ feedback_text }}</p>
+                  {% endif %}
+                </div>
+              {% endif %}
+            {% else %}
+              <p class="hint">Les résultats apparaîtront ici après la validation.</p>
+            {% endif %}
+          </section>
+        </div>
+
+        <footer class="page-footer">
+          <p>Envie d'aller plus loin ? Essayez l'<a href="/extraction">extraction</a> ou la <a href="/transformation">transformation</a> de texte.</p>
+        </footer>
+      </main>
+    </div>
   </body>
 </html>
