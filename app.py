@@ -72,7 +72,7 @@ VALIDATION_FEEDBACK = {
         "failure_text": (
             "Une date au format JJ/MM/AAAA ressemble à 31/12/2025 : "
             "deux chiffres, '/', deux chiffres, '/', quatre chiffres."
-        ),
+     ),
     },
 }
 

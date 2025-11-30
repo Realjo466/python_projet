@@ -2,6 +2,116 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8">
+    <title>TP Regex · Transformation & nettoyage</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <header class="page-header">
+        <div class="app-title">
+          <h1>Transformation & nettoyage de texte</h1>
+          <p class="app-subtitle">Remplacez, reformatez et nettoyez vos textes en utilisant la puissance des regex.</p>
+        </div>
+        <nav class="top-nav">
+          <a href="/validation" class="nav-link">Validation</a>
+          <a href="/extraction" class="nav-link">Extraction</a>
+          <a href="/transformation" class="nav-link active">Transformation</a>
+          <a href="/" class="nav-link nav-link-secondary">Accueil</a>
+        </nav>
+      </header>
+
+      <main>
+        <div class="two-column">
+          <section class="section section-main">
+            <h2>1. Définissez la transformation</h2>
+            <form method="post" class="form-grid">
+              <div class="field">
+                <label for="text">Texte source</label>
+                <textarea id="text" name="text" rows="8" cols="80">{{ text or '' }}</textarea>
+                <p class="field-help">Par ex. un texte avec des espaces en trop, des numéros à reformater, etc.</p>
+              </div>
+
+              <div class="field">
+                <label for="pattern">Pattern regex</label>
+                <input type="text" id="pattern" name="pattern"
+                       value="{{ pattern or '' }}"
+                       placeholder="par ex. \\s+ pour les espaces multiples">
+                <p class="field-help">Vous pouvez utiliser des groupes <code>()</code> et les réutiliser dans le remplacement : <code>\\1</code>, <code>\\2</code>, …</p>
+              </div>
+
+              <div class="field">
+                <label for="replacement">Remplacement</label>
+                <input type="text" id="replacement" name="replacement"
+                       value="{{ replacement or '' }}"
+                       placeholder="par ex. ' ' (un seul espace)">
+                <p class="field-help">Laissez vide pour simplement supprimer ce qui est matché.</p>
+              </div>
+
+              <div class="field">
+                <fieldset>
+                  <legend>2. Options (flags)</legend>
+                  <div class="flag-list">
+                    <label class="flag-item">
+                      <input type="checkbox" name="ignore_case"
+                             {% if request.form.get('ignore_case') %}checked{% endif %}>
+                      <span>
+                        <strong>IGNORECASE</strong>
+                        <span class="option-help">ne tient pas compte des majuscules/minuscules</span>
+                      </span>
+                    </label>
+                    <label class="flag-item">
+                      <input type="checkbox" name="multiline"
+                             {% if request.form.get('multiline') %}checked{% endif %}>
+                      <span>
+                        <strong>MULTILINE</strong>
+                        <span class="option-help">^ et $ correspondent au début/fin de chaque ligne</span>
+                      </span>
+                    </label>
+                    <label class="flag-item">
+                      <input type="checkbox" name="dotall"
+                             {% if request.form.get('dotall') %}checked{% endif %}>
+                      <span>
+                        <strong>DOTALL</strong>
+                        <span class="option-help">le point <code>.</code> correspond aussi au retour à la ligne</span>
+                      </span>
+                    </label>
+                  </div>
+                </fieldset>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit">Transformer</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="section section-side">
+            {% if error_message %}
+              <h2>Problème avec l'expression régulière</h2>
+              <p class="error">
+                Impossible d'utiliser cette expression régulière.
+                Vérifiez la syntaxe (parenthèses, crochets, accolades, antislashs).
+              </p>
+              <pre>{{ error_message }}</pre>
+            {% endif %}
+
+            {% if output_text is not none %}
+              <h2>Résultat</h2>
+              <p class="result-summary">Nombre de remplacements : <strong>{{ count }}</strong></p>
+
+              <h3>Texte transformé</h3>
+              <pre>{{ output_text }}</pre>
+            {% else %}
+              <p class="hint">Le texte transformé s'affichera ici après l'application de la regex.</p>
+            {% endif %}
+          </section>
+        </div>
+
+        <footer class="page-footer">
+          <p>Revenez à la <a href="/validation">validation</a> ou à l'<a href="/extraction">extraction</a> pour d'autres exercices.</p>
+        </footer>
+      </main>
+    </div>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transformation & nettoyage</title>
     <link rel="stylesheet" href="/static/style.css">

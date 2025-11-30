@@ -2,6 +2,138 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8">
+    <title>TP Regex · Extraction d'informations</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <header class="page-header">
+        <div class="app-title">
+          <h1>Extraction d'informations</h1>
+          <p class="app-subtitle">Repérez rapidement les éléments qui vous intéressent dans un texte grâce aux regex.</p>
+        </div>
+        <nav class="top-nav">
+          <a href="/validation" class="nav-link">Validation</a>
+          <a href="/extraction" class="nav-link active">Extraction</a>
+          <a href="/transformation" class="nav-link">Transformation</a>
+          <a href="/" class="nav-link nav-link-secondary">Accueil</a>
+        </nav>
+      </header>
+
+      <main>
+        <div class="two-column">
+          <section class="section section-main">
+            <h2>1. Définissez le texte source et le pattern</h2>
+            <form method="post" class="form-grid">
+              <div class="field">
+                <label for="text">Texte source</label>
+                <textarea id="text" name="text" rows="8" cols="80">{{ text or '' }}</textarea>
+                <p class="field-help">Collez ici un ou plusieurs paragraphes : emails, logs, adresses, etc.</p>
+              </div>
+
+              <div class="field">
+                <label for="pattern">Pattern regex</label>
+                <input type="text" id="pattern" name="pattern"
+                       value="{{ pattern or '' }}"
+                       placeholder="par ex. (\\\d{2}/\\\d{2}/\\\d{4})">
+                <p class="field-help">Utilisez des groupes de capture <code>()</code> si vous voulez extraire des sous-parties.</p>
+              </div>
+
+              <div class="field">
+                <fieldset>
+                  <legend>2. Options (flags)</legend>
+                  <div class="flag-list">
+                    <label class="flag-item">
+                      <input type="checkbox" name="ignore_case"
+                             {% if request.form.get('ignore_case') %}checked{% endif %}>
+                      <span>
+                        <strong>IGNORECASE</strong>
+                        <span class="option-help">ne tient pas compte des majuscules/minuscules</span>
+                      </span>
+                    </label>
+                    <label class="flag-item">
+                      <input type="checkbox" name="multiline"
+                             {% if request.form.get('multiline') %}checked{% endif %}>
+                      <span>
+                        <strong>MULTILINE</strong>
+                        <span class="option-help">^ et $ correspondent au début/fin de chaque ligne</span>
+                      </span>
+                    </label>
+                    <label class="flag-item">
+                      <input type="checkbox" name="dotall"
+                             {% if request.form.get('dotall') %}checked{% endif %}>
+                      <span>
+                        <strong>DOTALL</strong>
+                        <span class="option-help">le point <code>.</code> correspond aussi au retour à la ligne</span>
+                      </span>
+                    </label>
+                  </div>
+                </fieldset>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit">Extraire</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="section section-side">
+            {% if error_message %}
+              <h2>Problème avec l'expression régulière</h2>
+              <p class="error">
+                Impossible d'utiliser cette expression régulière.
+                Vérifiez la syntaxe (parenthèses, crochets, accolades, antislashs, espaces).
+              </p>
+              <pre>{{ error_message }}</pre>
+            {% endif %}
+
+            {% if matches %}
+              <h2>Résultats</h2>
+              <p class="result-summary">
+                <strong>{{ matches|length }}</strong> correspondance(s) trouvée(s).
+              </p>
+
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Texte trouvé</th>
+                      <th>Groupes capturés</th>
+                      <th>Position (start:end)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for m in matches %}
+                      <tr>
+                        <td><code>{{ m.match }}</code></td>
+                        <td>
+                          {% if m.groups %}
+                            {% for g in m.groups %}
+                              <code>{{ g }}</code>{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                          {% else %}
+                            -
+                          {% endif %}
+                        </td>
+                        <td>{{ m.start }} : {{ m.end }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% elif text %}
+              <p class="hint">Aucune correspondance trouvée avec ce pattern sur ce texte.</p>
+            {% else %}
+              <p class="hint">Les résultats d'extraction apparaîtront ici après l'envoi du formulaire.</p>
+            {% endif %}
+          </section>
+        </div>
+
+        <footer class="page-footer">
+          <p>Besoin de nettoyer ou reformater le texte ? Passez à la <a href="/transformation">transformation</a>.</p>
+        </footer>
+      </main>
+    </div>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Extraction d'informations</title>
     <link rel="stylesheet" href="/static/style.css">
