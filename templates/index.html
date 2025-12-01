@@ -6,54 +6,41 @@
     <title>TP Regex – Démo Web</title>
     <link rel="stylesheet" href="/static/style.css">
   </head>
+
   <body>
     <div class="page-wrapper home">
-      <header class="home-header">
-        <h1>TP – Expressions régulières en Python</h1>
-        <p class="app-subtitle">Trois petits outils pour comprendre la validation, l'extraction et la transformation avec les regex.</p>
-      </header>
+      <header class="home-header"></header>
 
-      <main>
-        <section class="section">
-          <p>Choisissez ce que vous voulez tester :</p>
-          <div class="home-links">
-            <a class="home-link" href="/validation">
-              <span class="home-link-title">Validation de données</span>
-              <span class="home-link-text">Tester si une valeur correspond à un format (email, date, code postal…).</span>
-            </a>
+      <div class="welcome-container">
+        <h1>Expressions régulières en Python</h1>
 
-            <a class="home-link" href="/extraction">
-              <span class="home-link-title">Extraction d'informations</span>
-              <span class="home-link-text">Trouver et lister des éléments dans un texte (dates, emails, numéros…).</span>
-            </a>
+        <div class="modules-grid">
 
-            <a class="home-link" href="/transformation">
-              <span class="home-link-title">Transformation & nettoyage</span>
-              <span class="home-link-text">Nettoyer ou reformater un texte en remplaçant ce qui est capturé par la regex.</span>
-            </a>
-          </div>
-        </section>
-      </main>
-    <div class="welcome-container">
-      <h1>Expressions régulières en Python</h1>
+          <a href="/validation" class="module-card">
+            <h2>Validation de données</h2>
+            <p>
+              Vérifiez si une valeur correspond à un format spécifique
+              (email, téléphone, date, etc.)
+            </p>
+          </a>
 
-    
+          <a href="/extraction" class="module-card">
+            <h2>Extraction d'informations</h2>
+            <p>
+              Extrayez des données structurées d'un texte en utilisant
+              des patterns regex personnalisés.
+            </p>
+          </a>
 
-      <div class="modules-grid">
-        <a href="/validation" class="module-card">
-          <h2>Validation de données</h2>
-          <p>Vérifiez si une valeur correspond à un format spécifique (email, téléphone, date, etc.)</p>
-        </a>
+          <a href="/transformation" class="module-card">
+            <h2>Transformation & nettoyage</h2>
+            <p>
+              Nettoyez et transformez du texte en remplaçant des patterns
+              par d'autres contenus.
+            </p>
+          </a>
 
-        <a href="/extraction" class="module-card">
-          <h2>Extraction d'informations</h2>
-          <p>Extrayez des données structurées d'un texte en utilisant des patterns regex personnalisés</p>
-        </a>
-
-        <a href="/transformation" class="module-card">
-          <h2>Transformation & nettoyage</h2>
-          <p>Nettoyez et transformez du texte en remplaçant des patterns par d'autres contenus</p>
-        </a>
+        </div>
       </div>
     </div>
   </body>
