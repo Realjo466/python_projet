@@ -11,19 +11,56 @@ app = Flask(__name__)
 
 
 # VALIDATION_PATTERNS associe un nom (email, phone...) à une expression régulière.
+# Chaque valeur est une *regex* (motif) décrivant la forme attendue de la donnée.
 VALIDATION_PATTERNS = {
 
-    # Regex simple pour valider un email.
-    
+    # --- EMAIL -----------------------------------------------------------------
+    # r"^[\w\.-]+@[\w\.-]+\.\w{2,}$" signifie :
+    #   ^              → début de la chaîne
+    #   [\w\.-]+      → un ou plusieurs caractères parmi :
+    #                     - \w : lettre, chiffre ou underscore (_)
+    #                     - .  : point littéraln    #                     - -  : tiret
+    #   @              → le caractère arobase
+    #   [\w\.-]+      → nom de domaine (même logique que la partie avant @)
+    #   \.            → un point littéral (".")
+    #   \w{2,}        → au moins 2 caractères "mot" (ex: fr, com, info)
+    #   $              → fin de la chaîne
+    # Exemple accepté : "prenom.nom@domaine.com".
     "email": r"^[\w\.-]+@[\w\.-]+\.\w{2,}$",  # mail de type josias@gmail.com
 
-    # Regex simplifiée pour un numéro de téléphone togolais.
+    # --- TÉLÉPHONE TOGOLAIS ----------------------------------------------------
+    # r"^(?:\+228\s?)?(?:7[0-3]|9[0-3,6-9])\d{6}$" signifie :
+    #   ^                        → début de la chaîne
+    #   (?:\+228\s?)?           → éventuellement le préfixe international "+228"
+    #                               avec 0 ou 1 espace après (\s? = espace facultatif)
+    #   (?:7[0-3]|9[0-3,6-9])    → début du numéro national :
+    #                               - 7 suivi d'un chiffre entre 0 et 3 (70, 71, 72, 73)
+    #                               - OU 9 suivi d'un chiffre entre 0-3 ou 6-9
+    #   \d{6}                   → exactement 6 chiffres supplémentaires
+    #   $                        → fin de la chaîne
+    # Cette regex décrit donc un numéro togolais plausible, avec ou sans "+228".
     "phone": r"^(?:\+228\s?)?(?:7[0-3]|9[0-3,6-9])\d{6}$",          
 
-    # Un code postal français(courament utilise au togo) contient exactement 5 chiffres.
+    # --- CODE POSTAL -----------------------------------------------------------
+    # r"^\d{5}$" signifie :
+    #   ^       → début
+    #   \d{5}  → exactement 5 chiffres
+    #   $       → fin
+    # Exemple : "75001". Aucune lettre ou espace n'est autorisé.
     "postal": r"^\d{5}$",
 
-    # Une date au format JJ/MM/AAAA (sans vérifier les vrais mois/jours).
+    # --- DATE JJ/MM/AAAA -------------------------------------------------------
+    # r"^([0-2]\d|3[01])/(0\d|1[0-2])/\d{4}$" signifie :
+    #   ^                            → début
+    #   ([0-2]\d|3[01])             → le jour :
+    #                                   - 0x, 1x ou 2x (00 à 29)
+    #                                   - OU 30 ou 31
+    #   /                            → un slash littéral
+    #   (0\d|1[0-2])                 → le mois : 00 à 09 ou 10 à 12
+    #   /                            → un deuxième slash
+    #   \d{4}                       → l'année sur 4 chiffres (ex : 2025)
+    #   $                            → fin
+    # Remarque : on vérifie le *format* JJ/MM/AAAA, pas la validité du calendrier.
     "date": r"^([0-2]\d|3[01])/(0\d|1[0-2])/\d{4}$",
 }
 
@@ -139,22 +176,39 @@ def validation():
 
         # --- Cas 1 : L'utilisateur a choisi un modèle prédéfini
         if validation_type in VALIDATION_PATTERNS:
-            # On récupère la regex correspondante.
+            # On récupère la regex correspondante dans le dictionnaire ci-dessus
+            # (email, phone, postal, date). Chaque motif décrit la forme complète
+            # attendue de la valeur.
             pattern_used = VALIDATION_PATTERNS[validation_type]
-            # On teste la valeur avec re.fullmatch (correspondance totale).
+
+            # re.fullmatch impose que *toute* la chaîne "value" respecte le motif.
+            # Attention : contrairement à re.search qui cherche "quelque chose"
+            # n'importe où dans le texte, fullmatch doit couvrir toute la valeur.
+            # Exemple :
+            #   pattern_used = r"^\d{5}$" (5 chiffres)
+            #   value = "75001"   → match OK
+            #   value = "75001-Paris" → pas de match (il y a du texte en plus).
             is_match = re.fullmatch(pattern_used, value)
-            # On convertit en True/False.
+
+            # is_match est soit un objet de type Match, soit None → on convertit
+            # en booléen simple (True si match, False sinon).
             result = bool(is_match)
 
         # --- Cas 2 : L'utilisateur a écrit sa propre regex
         elif validation_type == "custom":
+            # Dans ce cas, l'utilisateur écrit lui-même son motif regex dans le
+            # formulaire. On le récupère tel quel dans "custom_pattern".
             pattern_used = custom_pattern
             try:
-                # On essaie d'appliquer la regex.
+                # On essaie d'appliquer la regex avec re.fullmatch, comme pour les
+                # motifs prédéfinis. Si le motif est syntaxiquement incorrect
+                # (parenthèse manquante, crochet non fermé, etc.), re.fullmatch
+                # lève une exception de type re.error.
                 is_match = re.fullmatch(pattern_used, value)
                 result = bool(is_match)
             except re.error as e:
-                # Si la regex est mauvaise, Python renvoie une erreur.
+                # Si la regex est mauvaise, Python renvoie une erreur → on informe
+                # l'utilisateur en lui renvoyant un message lisible.
                 result = "invalid_pattern"
                 error_message = f"Erreur dans le pattern : {e}"
 
@@ -226,10 +280,16 @@ def extraction():
         flags = build_flags(ignore_case, multiline, dotall)
 
         try:
-            # On compile la regex avec ses options.
+            # On compile la regex avec ses options. C'est l'équivalent de créer un
+            # objet Regex réutilisable en C# (new Regex(pattern, options)).
+            # Si "pattern" est invalide (mauvaise syntaxe), re.compile lève re.error.
             regex = re.compile(pattern, flags)
 
-            # On parcourt CHAQUE correspondance trouvée dans le texte.
+            # regex.finditer(text) parcourt CHAQUE correspondance trouvée dans le
+            # texte. À chaque fois, on récupère :
+            #   - m.group(0)  : le texte complet qui matche la regex
+            #   - m.groups()  : les groupes capturants (parenthèses dans le motif)
+            #   - m.start()/m.end() : positions de début et de fin dans "text".
             for m in regex.finditer(text):
                 matches.append({
                     "match": m.group(0),      # texte trouvé
@@ -288,10 +348,14 @@ def transformation():
         flags = build_flags(ignore_case, multiline, dotall)
 
         try:
-            # On compile la regex.
+            # On compile la regex. Si le motif est invalide, re.compile lèvera re.error.
             regex = re.compile(pattern, flags)
 
             # subn applique le remplacement et renvoie (texte_modifié, nombre_remplacements).
+            # C'est l'équivalent d'un Regex.Replace en C#, mais qui renvoie aussi
+            # le nombre de remplacements effectués :
+            #   - output_text : le texte après substitution
+            #   - count       : combien de fois le motif a été trouvé et remplacé
             output_text, count = regex.subn(replacement, text)
 
         except re.error as e:
