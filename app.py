@@ -2,70 +2,25 @@
 import re
 
 # On importe Flask et les fonctions nécessaires pour créer des pages et lire les formulaires.
-from flask import Flask, render_template, request
+from flask import Flask, render_template
+
+# On importe les blueprints définis dans les fichiers séparés.
+from validation_routes import validation_bp
+from extraction_routes import extraction_bp
+from transformation_routes import transformation_bp
 
 # On crée une instance de l'application Flask.
 app = Flask(__name__)
 
+# On enregistre les blueprints : cela "branche" les routes définies dans
+# les autres fichiers sur cette application principale.
+app.register_blueprint(validation_bp)
+app.register_blueprint(extraction_bp)
+app.register_blueprint(transformation_bp)
+
 # 1. Dictionnaire contenant des modèles de validation (regex prédéfinies)
-
-
-# VALIDATION_PATTERNS associe un nom (email, phone...) à une expression régulière.
-# Chaque valeur est une *regex* (motif) décrivant la forme attendue de la donnée.
-VALIDATION_PATTERNS = {
-
-    # --- EMAIL -----------------------------------------------------------------
-    # r"^[\w\.-]+@[\w\.-]+\.\w{2,}$" signifie :
-    #   ^              → début de la chaîne
-    #   [\w\.-]+      → un ou plusieurs caractères parmi :
-    #                     - \w : lettre, chiffre ou underscore (_)
-    #                     - .  : point littéraln    #                     - -  : tiret
-    #   @              → le caractère arobase
-    #   [\w\.-]+      → nom de domaine (même logique que la partie avant @)
-    #   \.            → un point littéral (".")
-    #   \w{2,}        → au moins 2 caractères "mot" (ex: fr, com, info)
-    #   $              → fin de la chaîne
-    # Exemple accepté : "prenom.nom@domaine.com".
-    "email": r"^[\w\.-]+@[\w\.-]+\.\w{2,}$",  # mail de type josias@gmail.com
-
-    # --- TÉLÉPHONE TOGOLAIS ----------------------------------------------------
-    # r"^(?:\+228\s?)?(?:7[0-3]|9[0-3,6-9])\d{6}$" signifie :
-    #   ^                        → début de la chaîne
-    #   (?:\+228\s?)?           → éventuellement le préfixe international "+228"
-    #                               avec 0 ou 1 espace après (\s? = espace facultatif)
-    #   (?:7[0-3]|9[0-3,6-9])    → début du numéro national :
-    #                               - 7 suivi d'un chiffre entre 0 et 3 (70, 71, 72, 73)
-    #                               - OU 9 suivi d'un chiffre entre 0-3 ou 6-9
-    #   \d{6}                   → exactement 6 chiffres supplémentaires
-    #   $                        → fin de la chaîne
-    # Cette regex décrit donc un numéro togolais plausible, avec ou sans "+228".
-    "phone": r"^(?:\+228\s?)?(?:7[0-3]|9[0-3,6-9])\d{6}$",          
-
-    # --- CODE POSTAL -----------------------------------------------------------
-    # r"^\d{5}$" signifie :
-    #   ^       → début
-    #   \d{5}  → exactement 5 chiffres
-    #   $       → fin
-    # Exemple : "75001". Aucune lettre ou espace n'est autorisé.
-    "postal": r"^\d{5}$",
-
-    # --- DATE JJ/MM/AAAA -------------------------------------------------------
-    # r"^([0-2]\d|3[01])/(0\d|1[0-2])/\d{4}$" signifie :
-    #   ^                            → début
-    #   ([0-2]\d|3[01])             → le jour :
-    #                                   - 0x, 1x ou 2x (00 à 29)
-    #                                   - OU 30 ou 31
-    #   /                            → un slash littéral
-    #   (0\d|1[0-2])                 → le mois : 00 à 09 ou 10 à 12
-    #   /                            → un deuxième slash
-    #   \d{4}                       → l'année sur 4 chiffres (ex : 2025)
-    #   $                            → fin
-    # Remarque : on vérifie le *format* JJ/MM/AAAA, pas la validité du calendrier.
-    "date": r"^([0-2]\d|3[01])/(0\d|1[0-2])/\d{4}$",
-}
-
-# Messages explicatifs pour chaque type de validation prédéfini
-VALIDATION_FEEDBACK = {
+# et messages associés : ces éléments ont été déplacés dans validation_routes.py
+# pour regrouper la logique de validation au même endroit.
     "email": {
         "success_title": "Adresse e-mail valide",
         "success_text": (
@@ -147,231 +102,21 @@ def index():
 
 # 4. ROUTE : Page de validation de données
 # -----------------------------------------------------------------------------
-
-@app.route("/validation", methods=["GET", "POST"])
-def validation():
-    # 
-    # Cette fonction gère l'écran où l'utilisateur vérifie une valeur (email, téléphone...).
-   
-
-    # Variables initialisées pour qu'elles existent même avant envoi du formulaire.
-    result = None          # True / False / "invalid_pattern"
-    pattern_used = None    # Regex appliquée
-    value = ""             # Valeur entrée par l'utilisateur  (le champ texte)
-    validation_type = ""   # Type sélectionné (email, phone , code postal ,date)
-    custom_pattern = ""    # Regex personnalisée  personna
-    error_message = None   # Message d'erreur si la regex est fausse
-    feedback_title = None  # Titre explicatif (ex. "Adresse e-mail invalide")
-    feedback_text = None   # Texte plus détaillé pour aider l'utilisateur
-
-    # Si l'utilisateur a soumis le formulaire en POST :
-    if request.method == "POST":            # requette HTTP
-        
-        # On lit la valeur entrée dans le champ "value".
-        value = request.form.get("value", "")
-        # Le type choisi : email / phone / postal / date / custom.
-        validation_type = request.form.get("validation_type", "")
-        # Si custom, l'utilisateur fournit lui-même sa regex.
-        custom_pattern = request.form.get("custom_pattern", "")
-
-        # --- Cas 1 : L'utilisateur a choisi un modèle prédéfini
-        if validation_type in VALIDATION_PATTERNS:
-            # On récupère la regex correspondante dans le dictionnaire ci-dessus
-            # (email, phone, postal, date). Chaque motif décrit la forme complète
-            # attendue de la valeur.
-            pattern_used = VALIDATION_PATTERNS[validation_type]
-
-            # re.fullmatch impose que *toute* la chaîne "value" respecte le motif.
-            # Attention : contrairement à re.search qui cherche "quelque chose"
-            # n'importe où dans le texte, fullmatch doit couvrir toute la valeur.
-            # Exemple :
-            #   pattern_used = r"^\d{5}$" (5 chiffres)
-            #   value = "75001"   → match OK
-            #   value = "75001-Paris" → pas de match (il y a du texte en plus).
-            is_match = re.fullmatch(pattern_used, value)
-
-            # is_match est soit un objet de type Match, soit None → on convertit
-            # en booléen simple (True si match, False sinon).
-            result = bool(is_match)
-
-        # --- Cas 2 : L'utilisateur a écrit sa propre regex
-        elif validation_type == "custom":
-            # Dans ce cas, l'utilisateur écrit lui-même son motif regex dans le
-            # formulaire. On le récupère tel quel dans "custom_pattern".
-            pattern_used = custom_pattern
-            try:
-                # On essaie d'appliquer la regex avec re.fullmatch, comme pour les
-                # motifs prédéfinis. Si le motif est syntaxiquement incorrect
-                # (parenthèse manquante, crochet non fermé, etc.), re.fullmatch
-                # lève une exception de type re.error.
-                is_match = re.fullmatch(pattern_used, value)
-                result = bool(is_match)
-            except re.error as e:
-                # Si la regex est mauvaise, Python renvoie une erreur → on informe
-                # l'utilisateur en lui renvoyant un message lisible.
-                result = "invalid_pattern"
-                error_message = f"Erreur dans le pattern : {e}"
-
-    # Préparer un message explicatif convivial en fonction du type et du résultat
-    if result in (True, False):
-        if validation_type in VALIDATION_FEEDBACK:
-            msgs = VALIDATION_FEEDBACK[validation_type]
-            if result:
-                feedback_title = msgs.get("success_title")
-                feedback_text = msgs.get("success_text")
-            else:
-                feedback_title = msgs.get("failure_title")
-                feedback_text = msgs.get("failure_text")
-        elif validation_type == "custom":
-            if result:
-                feedback_title = "Motif personnalisé respecté"
-                feedback_text = (
-                    "La valeur respecte le motif regex que vous avez défini. "
-                    "Vous pouvez l'ajuster pour être plus strict ou plus large si besoin."
-                )
-            else:
-                feedback_title = "Motif personnalisé non respecté"
-                feedback_text = (
-                    "La valeur ne respecte pas le motif regex que vous avez défini. "
-                    "Vérifiez que la regex décrit bien le format attendu (par exemple un numéro spécifique)."
-                )
-
-    # On renvoie la page avec les résultats et les valeurs entrées.
-    return render_template(
-        "validation.html",
-        result=result,
-        pattern_used=pattern_used,
-        value=value,
-        validation_type=validation_type,
-        custom_pattern=custom_pattern,
-        error_message=error_message,
-        feedback_title=feedback_title,
-        feedback_text=feedback_text,
-    )
+# La logique de validation a été déplacée dans validation_routes.py où un
+# blueprint (validation_bp) définit la route "/validation" avec tous les
+# commentaires détaillés sur les regex.
 
 # -----------------------------------------------------------------------------
 # 5. ROUTE : Page d'extraction d'informations
 # -----------------------------------------------------------------------------
-
-@app.route("/extraction", methods=["GET", "POST"])
-def extraction():
-    """
-    L'utilisateur entre un texte + une regex → on retourne toutes les occurrences trouvées.
-    """
-
-    # Valeurs par défaut avant envoi du formulaire.
-    text = ""
-    pattern = ""
-    matches = []      # Liste des résultats trouvés
-    error_message = None
-
-    # Si l'utilisateur a envoyé le formulaire :
-    if request.method == "POST":
-        # On lit le texte et le pattern saisis.
-        text = request.form.get("text", "")
-        pattern = request.form.get("pattern", "")
-
-        # On lit les options (checkbox).
-        ignore_case = request.form.get("ignore_case") == "on"
-        multiline = request.form.get("multiline") == "on"
-        dotall = request.form.get("dotall") == "on"
-
-        # On construit les flags grâce à la fonction utilitaire.
-        flags = build_flags(ignore_case, multiline, dotall)
-
-        try:
-            # On compile la regex avec ses options. C'est l'équivalent de créer un
-            # objet Regex réutilisable en C# (new Regex(pattern, options)).
-            # Si "pattern" est invalide (mauvaise syntaxe), re.compile lève re.error.
-            regex = re.compile(pattern, flags)
-
-            # regex.finditer(text) parcourt CHAQUE correspondance trouvée dans le
-            # texte. À chaque fois, on récupère :
-            #   - m.group(0)  : le texte complet qui matche la regex
-            #   - m.groups()  : les groupes capturants (parenthèses dans le motif)
-            #   - m.start()/m.end() : positions de début et de fin dans "text".
-            for m in regex.finditer(text):
-                matches.append({
-                    "match": m.group(0),      # texte trouvé
-                    "groups": list(m.groups()),  # groupes capturés
-                    "start": m.start(),          # position début
-                    "end": m.end(),              # position fin
-                })
-
-        except re.error as e:
-            # Si la regex est mauvaise → erreur affichée.
-            error_message = f"Erreur dans le pattern : {e}"
-
-    # On renvoie la page template avec les résultats.
-    return render_template(
-        "extraction.html",
-        text=text,
-        pattern=pattern,
-        matches=matches,
-        error_message=error_message,
-    )
+# La logique d'extraction a été déplacée dans extraction_routes.py où un
+# blueprint (extraction_bp) définit la route "/extraction".
 
 # -----------------------------------------------------------------------------
 # 6. ROUTE : Transformation et nettoyage de texte
 # -----------------------------------------------------------------------------
-
-@app.route("/transformation", methods=["GET", "POST"])
-def transformation():
-    """
-    L'utilisateur fournit :
-        - un texte
-        - une regex
-        - un texte de remplacement
-    On applique re.subn pour transformer le texte.
-    """
-
-    # Valeurs par défaut
-    text = ""
-    pattern = ""
-    replacement = ""
-    output_text = None
-    count = 0
-    error_message = None
-
-    if request.method == "POST":
-        # On lit les champs fournis dans le formulaire.
-        text = request.form.get("text", "")
-        pattern = request.form.get("pattern", "")
-        replacement = request.form.get("replacement", "")
-
-        # On lit les options de regex.
-        ignore_case = request.form.get("ignore_case") == "on"
-        multiline = request.form.get("multiline") == "on"
-        dotall = request.form.get("dotall") == "on"
-
-        # On construit les flags.
-        flags = build_flags(ignore_case, multiline, dotall)
-
-        try:
-            # On compile la regex. Si le motif est invalide, re.compile lèvera re.error.
-            regex = re.compile(pattern, flags)
-
-            # subn applique le remplacement et renvoie (texte_modifié, nombre_remplacements).
-            # C'est l'équivalent d'un Regex.Replace en C#, mais qui renvoie aussi
-            # le nombre de remplacements effectués :
-            #   - output_text : le texte après substitution
-            #   - count       : combien de fois le motif a été trouvé et remplacé
-            output_text, count = regex.subn(replacement, text)
-
-        except re.error as e:
-            # Si la regex est mauvaise → erreur.
-            error_message = f"Erreur dans le pattern : {e}"
-
-    # On renvoie les résultats à la page.
-    return render_template(
-        "transformation.html",
-        text=text,
-        pattern=pattern,
-        replacement=replacement,
-        output_text=output_text,
-        count=count,
-        error_message=error_message,
-    )
+# La logique de transformation a été déplacée dans transformation_routes.py où un
+# blueprint (transformation_bp) définit la route "/transformation".
 
 # -----------------------------------------------------------------------------
 # 7. Lancement de l'application Flask
