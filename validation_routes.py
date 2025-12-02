@@ -5,13 +5,11 @@ from flask import Blueprint, render_template, request
 # Ce blueprint sera enregistré dans l'application principale (app.py).
 validation_bp = Blueprint("validation", __name__)
 
-# Dictionnaire des patterns de validation (copié depuis app.py pour clarté).
-# Idéalement, si tu veux aller plus loin, on pourrait aussi extraire ces
-# constantes dans un autre module commun, mais pour l'instant on garde
-# exactement la même logique.
+# Dictionnaire des patterns de validation :
+
 VALIDATION_PATTERNS = {
 
-    # --- EMAIL -----------------------------------------------------------------
+    #   EMAIL
     # r"^[\w\.-]+@[\w\.-]+\.\w{2,}$" signifie :
     #   ^              → début de la chaîne
     #   [\w\.-]+      → un ou plusieurs caractères parmi :
@@ -24,9 +22,10 @@ VALIDATION_PATTERNS = {
     #   \w{2,}        → au moins 2 caractères "mot" (ex: fr, com, info)
     #   $              → fin de la chaîne
     # Exemple accepté : "prenom.nom@domaine.com".
+
     "email": r"^[\w\.-]+@[\w\.-]+\.\w{2,}$",  # mail de type josias@gmail.com
 
-    # --- TÉLÉPHONE TOGOLAIS ----------------------------------------------------
+    #        TÉLÉPHONE TOGOLAIS 
     # r"^(?:\+228\s?)?(?:7[0-3]|9[0-3,6-9])\d{6}$" signifie :
     #   ^                        → début de la chaîne
     #   (?:\+228\s?)?           → éventuellement le préfixe international "+228"
@@ -37,9 +36,11 @@ VALIDATION_PATTERNS = {
     #   \d{6}                   → exactement 6 chiffres supplémentaires
     #   $                        → fin de la chaîne
     # Cette regex décrit donc un numéro togolais plausible, avec ou sans "+228".
+
+
     "phone": r"^(?:\+228\s?)?(?:7[0-3]|9[0-3,6-9])\d{6}$",          
 
-    # --- CODE POSTAL -----------------------------------------------------------
+    # - CODE POSTAL 
     # r"^\d{5}$" signifie :
     #   ^       → début
     #   \d{5}  → exactement 5 chiffres
@@ -47,7 +48,7 @@ VALIDATION_PATTERNS = {
     # Exemple : "75001". Aucune lettre ou espace n'est autorisé.
     "postal": r"^\d{5}$",
 
-    # --- DATE JJ/MM/AAAA -------------------------------------------------------
+    #  DATE JJ/MM/AAAA 
     # r"^([0-2]\d|3[01])/(0\d|1[0-2])/\d{4}$" signifie :
     #   ^                            → début
     #   ([0-2]\d|3[01])             → le jour :

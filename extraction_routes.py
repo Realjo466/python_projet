@@ -1,7 +1,7 @@
 import re
 from flask import Blueprint, render_template, request
 
-from app import build_flags  # réutilise la fonction utilitaire définie dans app.py
+from utils import build_flags  
 
 # Blueprint pour la partie "extraction".
 extraction_bp = Blueprint("extraction", __name__)

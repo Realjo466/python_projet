@@ -1,7 +1,7 @@
 import re
 from flask import Blueprint, render_template, request
 
-from app import build_flags  # réutilisation de la fonction utilitaire
+from utils import build_flags  # réutilisation de la fonction utilitaire
 
 # Blueprint pour la partie "transformation".
 transformation_bp = Blueprint("transformation", __name__)
